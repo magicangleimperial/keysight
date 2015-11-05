@@ -1,0 +1,46 @@
+<GraphCustom>:
+
+<MainScreen>
+	orientation: 'vertical'
+    BoxLayout:
+    	size_hint_y: None
+		height: 50
+    	orientation: 'horizontal'
+		Button:
+			text: "ON"
+			background_color: 0.3, 0.3, 0.3, 1
+			on_press: root.on()
+		Button:
+			text: "OFF"
+			background_color: 0.3, 0.3, 0.3, 1
+			on_press: root.off()
+	BoxLayout:
+    	size_hint_y: None
+		height: 50
+    	orientation: 'horizontal'
+		Button:
+			text: "Set Voltage"
+			background_color: 0.3, 0.3, 0.3, 1
+			on_press: root.setVoltage()
+		Button:
+			text: "Set Current"
+			background_color: 0.3, 0.3, 0.3, 1
+			on_press: root.setCurrent()
+	BoxLayout:
+    	size_hint_y: None
+		height: 50
+    	orientation: 'horizontal'
+		FloatInput:
+			text: "0"
+		Label:
+		FloatInput:
+			text: "0"
+		Label:
+    GraphCustom:
+		size: self.parent.size
+		pos: self.parent.pos
+		ylabel: 'Voltage (V)'
+	GraphCustom:
+		size: self.parent.size
+		pos: self.parent.pos
+		ylabel: 'Current (Amps)'
