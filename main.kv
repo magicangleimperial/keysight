@@ -31,11 +31,11 @@
 		height: 50
     	orientation: 'horizontal'
 		FloatInput:
+			padding: [10, (self.height - self.line_height) / 2]
 			text: "0"
-		Label:
 		FloatInput:
+			padding: [10, (self.height - self.line_height) / 2]
 			text: "0"
-		Label:
     GraphCustom:
 		size: self.parent.size
 		pos: self.parent.pos
@@ -44,3 +44,15 @@
 		size: self.parent.size
 		pos: self.parent.pos
 		ylabel: 'Current (Amps)'
+	BoxLayout:
+    	size_hint_y: None
+		height: 50
+    	orientation: 'horizontal'
+		Label:
+			id: volt_meas
+			markup: True
+			text: "[b]Voltage Measurement [color=#008000]0[/color] V[/b]"
+		Label:
+			id: curr_meas
+			markup: True
+			text: "[b]Current Measurement [color=#008000]0[/color][/b]"

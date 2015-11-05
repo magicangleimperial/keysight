@@ -39,6 +39,8 @@ class MainScreen(BoxLayout):
         print('Set Off')
 
     def setVoltage(self):
+        val = "[b]Voltage Measurement [color=#008000]100[/color] V[/b]"
+        self.ids.volt_meas.text = val
         print('Set Voltage')
 
     def setCurrent(self):
