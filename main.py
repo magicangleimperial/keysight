@@ -1,13 +1,15 @@
+import graphcustom
+from numpy import zeros, roll, linspace
+from threading import Thread
+from time import sleep
 from kivy.app import App
-from kivy.garden.graph import Graph, MeshLinePlot
-from kivy.uix.behaviors import ButtonBehavior
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.textinput import TextInput
-from numpy import sin
-from time import sleep
 from kivy import config
-from kivy.utils import get_color_from_hex as rgb
+import visa
 config.Config.set('input', 'mouse', 'mouse,disable_multitouch')
+from kivy.lang import Builder
+Builder.load_file('graphcustom.kv')
 
 
 class FloatInput(TextInput):
@@ -31,56 +33,70 @@ class FloatInput(TextInput):
 class MainScreen(BoxLayout):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+        self.bool_off = False
+        self.device = DeviceControl()
+        self.time = linspace(0, 599, 600)
+        self.volt = zeros([600])
+        self.curr = zeros([600])
+        Thread(target=self.get_curr_volt).start()
 
-    def on(self):
-        print('Set On')
-
-    def off(self):
-        print('Set Off')
-
-    def setVoltage(self):
-        val = "[b]Voltage Measurement [color=#008000]100[/color] V[/b]"
-        self.ids.volt_meas.text = val
-        print('Set Voltage')
-
-    def setCurrent(self):
-        print('Set Current')
-
-
-class GraphCustom(ButtonBehavior, Graph):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.label_options = {'color': rgb('#000000'), 'bold': True}
-        self.background_color = rgb('f8f8f2')
-        self.tick_color = rgb('808080')
-        self.border_color = rgb('808080')
-        self.xlabel = 'Time (s)'
-        self.x_ticks_minor = 5
-        self.x_ticks_major = 25
-        self.y_ticks_major = 1
-        self.y_grid_label = True
-        self.x_grid_label = True
-        self.padding = 5
-        self.x_grid = True
-        self.y_grid = True
-        self.xmin = -0
-        self.xmax = 100
-        self.ymin = -1
-        self.ymax = 1
-
-        self.plot = MeshLinePlot(color=[0, 0, 0.75, 1])
-        self.plot.points = [(x, sin(x / 10.)) for x in range(0, 101)]
-        self.add_plot(self.plot)
-
-    def redraw(self):
-        while not self.stop:
-            self.i += 0.1
-            self.plot.points = [(x, sin(x / 10. + self.i)) for x in range(0, 101)]
-            sleep(0.1)
+    def get_curr_volt(self):
+        while not self.bool_off:
+            if self.device.read('OUTP?') is not None:
+                self.ids.device.text = 'Status : ' + self.device.read('*IDN?')
+                volt = self.device.read('MEAS:VOLT?')
+                curr = self.device.read('MEAS:CURR?')
+                if volt is not None:
+                    val = "[b]Voltage Measurement [color=#008000]"
+                    self.ids.volt_meas.text = val + volt[:5] + "[/color] V[/b]"
+                    self.hist_volt(float(volt))
+                    self.ids.graph_volt.draw(self.time, self.volt)
+                if curr is not None:
+                    val = "[b]Current Measurement [color=#008000]"
+                    self.ids.curr_meas.text = val + curr[:5] + "[/color] A[/b]"
+                    self.hist_curr(float(curr))
+                    self.ids.graph_curr.draw(self.time, self.curr)
+                if self.device.read('OUTP?') is not None:
+                    if int(self.device.read('OUTP?')) == 0:
+                        self.disabler(False)
+                    else:
+                        self.disabler(True)
+                sleep(0.5)
+            else:
+                self.ids.device.text = 'Status : Device not connected.'
+                self.device.open()
+                sleep(2)
         return 0
 
-    def on_press(self):
-        pass
+    def disabler(self, on_off):
+        self.ids.btn_on.disabled = on_off
+        self.ids.btn_off.disabled = not on_off
+        self.ids.btn_volt.disabled = not on_off
+        self.ids.btn_curr.disabled = not on_off
+
+    def on(self):
+        self.device.write("OUTP ON")
+        self.disabler(True)
+
+    def off(self):
+        self.device.write("OUTP OFF")
+        self.disabler(False)
+
+    def setVoltage(self):
+        volt = float(self.ids.input_volt.text)
+        self.device.write("VOLT " + str(volt))
+
+    def setCurrent(self):
+        curr = float(self.ids.input_curr.text)
+        self.device.write("CURR " + str(curr))
+
+    def hist_volt(self, volt):
+        self.volt = roll(self.volt, -1)
+        self.volt[-1] = volt
+
+    def hist_curr(self, curr):
+        self.curr = roll(self.curr, -1)
+        self.curr[-1] = curr
 
 
 class MainApp(App):
@@ -92,8 +108,50 @@ class MainApp(App):
         return self.root
 
     def on_stop(self):
-        pass
+        self.root.bool_off = True
+        self.root.device.close()
 
+
+class DeviceControl(object):
+    def __init__(self):
+        super().__init__()
+        self.instr = None
+        self.rm = None
+        self.open()
+
+    def open(self):
+        self.rm = visa.ResourceManager()
+        try:
+            rsc = 'USB0::0x0957::0xA807::US14N7308R::INSTR'
+            self.instr = self.rm.open_resource(rsc)
+        except:
+            self.instr = None
+            self.rm.close()
+            self.rm = None
+
+    def read(self, command):
+        if self.instr is not None:
+            try:
+                data_read = self.instr.query(command)
+                return data_read
+            except:
+                return None
+
+    def write(self, command):
+        if self.instr is not None:
+            try:
+                self.instr.write(command)
+                return 0
+            except:
+                return 1
+
+    def close(self):
+        if self.instr is not None:
+            self.instr.close()
+            self.instr = None
+        if self.rm is not None:
+            self.rm.close()
+            self.rm = None
 
 if __name__ == "__main__":
     app = MainApp()

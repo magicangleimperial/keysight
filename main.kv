@@ -1,5 +1,3 @@
-<GraphCustom>:
-
 <MainScreen>
 	orientation: 'vertical'
     BoxLayout:
@@ -7,10 +5,12 @@
 		height: 50
     	orientation: 'horizontal'
 		Button:
+			id: btn_on
 			text: "ON"
 			background_color: 0.3, 0.3, 0.3, 1
 			on_press: root.on()
 		Button:
+			id: btn_off
 			text: "OFF"
 			background_color: 0.3, 0.3, 0.3, 1
 			on_press: root.off()
@@ -19,10 +19,12 @@
 		height: 50
     	orientation: 'horizontal'
 		Button:
+			id: btn_volt
 			text: "Set Voltage"
 			background_color: 0.3, 0.3, 0.3, 1
 			on_press: root.setVoltage()
 		Button:
+			id: btn_curr
 			text: "Set Current"
 			background_color: 0.3, 0.3, 0.3, 1
 			on_press: root.setCurrent()
@@ -31,16 +33,20 @@
 		height: 50
     	orientation: 'horizontal'
 		FloatInput:
+			id: input_volt
 			padding: [10, (self.height - self.line_height) / 2]
 			text: "0"
 		FloatInput:
+			id: input_curr
 			padding: [10, (self.height - self.line_height) / 2]
 			text: "0"
     GraphCustom:
+		id: graph_volt
 		size: self.parent.size
 		pos: self.parent.pos
 		ylabel: 'Voltage (V)'
 	GraphCustom:
+		id: graph_curr
 		size: self.parent.size
 		pos: self.parent.pos
 		ylabel: 'Current (Amps)'
@@ -56,3 +62,10 @@
 			id: curr_meas
 			markup: True
 			text: "[b]Current Measurement [color=#008000]0[/color][/b]"
+	BoxLayout:
+    	size_hint_y: None
+		height: 30
+    	orientation: 'horizontal'
+		Label:
+			id: device
+			text: 'Status : Device not connected.'
