@@ -2,25 +2,20 @@ from numpy import amin, amax, ceil, log10
 from kivy.uix.behaviors import ButtonBehavior
 from kivy.garden.graph import Graph, MeshLinePlot
 from numba import jit
-from time import time
 
 
 @jit
 def autoscale(n_array, n_ticks):
-    start = time()
     n_min = amin(n_array)
     n_max = amax(n_array)
     if n_min == n_max:
         n_min -= 0.05
         n_max += 0.05
     unroundedTickSize = (n_max - n_min) / (n_ticks-1)
-    x = ceil(log10(unroundedTickSize) - 1)
-    pow10x = pow(10, x)
+    pow10x = pow(10, ceil(log10(unroundedTickSize) - 1))
     roundedTickRange = ceil(unroundedTickSize / pow10x) * pow10x
     lower_lim = roundedTickRange * round(n_min / roundedTickRange)
     upper_lim = roundedTickRange * round(1 + n_max / roundedTickRange)
-    end = time()
-    print(end - start)
 
     return float(lower_lim), float(upper_lim), roundedTickRange
 
