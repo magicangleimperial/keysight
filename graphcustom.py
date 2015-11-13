@@ -13,7 +13,8 @@ class GraphCustom(ButtonBehavior, Graph):
     def draw(self, x, y, autozoom=True):
         if autozoom:
             self.ymin = 0
-            self.ymax = float(amax(y) + 0.1)
+            dy = amax(y) / 10 if amax(y) != 0 else 0.1
+            self.ymax = float(amax(y) + dy)
             self.x_ticks_major = 200
             self.y_ticks_major = (self.ymax - self.ymin) / 2
         curve = []

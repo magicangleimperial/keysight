@@ -43,26 +43,29 @@ class MainScreen(BoxLayout):
     def get_curr_volt(self):
         while not self.bool_off:
             if self.device.read('OUTP?') is not None:
-                self.ids.device.text = 'Status : ' + self.device.read('*IDN?')
-                volt = self.device.read('MEAS:VOLT?')
-                curr = self.device.read('MEAS:CURR?')
-                if volt is not None:
+                try:
+                    dev_name = self.device.read('*IDN?')
+                    self.ids.device.text = 'Status : ' + dev_name
+                    volt = self.device.read('MEAS:VOLT?')[:5]
+                    curr = self.device.read('MEAS:CURR?')[:5]
                     val = "[b]Voltage Measurement [color=#008000]"
-                    self.ids.volt_meas.text = val + volt[:5] + "[/color] V[/b]"
+                    self.ids.volt_meas.text = val + volt + "[/color] V[/b]"
                     self.hist_volt(float(volt))
                     self.ids.graph_volt.draw(self.time, self.volt)
-                if curr is not None:
                     val = "[b]Current Measurement [color=#008000]"
-                    self.ids.curr_meas.text = val + curr[:5] + "[/color] A[/b]"
+                    self.ids.curr_meas.text = val + curr + "[/color] A[/b]"
                     self.hist_curr(float(curr))
                     self.ids.graph_curr.draw(self.time, self.curr)
-                if self.device.read('OUTP?') is not None:
-                    if int(self.device.read('OUTP?')) == 0:
-                        self.disabler(False)
-                    else:
-                        self.disabler(True)
+                    if self.device.read('OUTP?') is not None:
+                        if int(self.device.read('OUTP?')) == 0:
+                            self.disabler(False)
+                        else:
+                            self.disabler(True)
+                except:
+                    print('Reading Issues')
                 sleep(0.5)
             else:
+                self.disabler(False)
                 self.ids.device.text = 'Status : Device not connected.'
                 self.device.open()
                 sleep(2)
@@ -120,6 +123,7 @@ class DeviceControl(object):
         self.open()
 
     def open(self):
+        self.close()
         self.rm = visa.ResourceManager()
         try:
             rsc = 'USB0::0x0957::0xA807::US14N7308R::INSTR'
