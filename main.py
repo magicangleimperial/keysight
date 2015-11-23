@@ -46,14 +46,16 @@ class MainScreen(BoxLayout):
                 try:
                     dev_name = self.device.read('*IDN?')
                     self.ids.device.text = 'Status : ' + dev_name
-                    volt = self.device.read('MEAS:VOLT?')[:5]
-                    curr = self.device.read('MEAS:CURR?')[:5]
+                    volt = float(self.device.read('MEAS:VOLT?')[1:])
+                    curr = float(self.device.read('MEAS:CURR?')[1:])
                     val = "[b]Voltage Measurement [color=#008000]"
-                    self.ids.volt_meas.text = val + volt + "[/color] V[/b]"
+                    self.ids.volt_meas.text = val + str(volt)
+                    self.ids.volt_meas.text += "[/color] V[/b]"
                     self.hist_volt(float(volt))
                     self.ids.graph_volt.draw(self.time, self.volt)
                     val = "[b]Current Measurement [color=#008000]"
-                    self.ids.curr_meas.text = val + curr + "[/color] A[/b]"
+                    self.ids.curr_meas.text = val + str(curr)
+                    self.ids.curr_meas.text += "[/color] A[/b]"
                     self.hist_curr(float(curr))
                     self.ids.graph_curr.draw(self.time, self.curr)
                     if self.device.read('OUTP?') is not None:
