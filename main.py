@@ -43,6 +43,7 @@ class MainScreen(BoxLayout):
     def get_curr_volt(self):
         while not self.bool_off:
             if self.device.read('OUTP?') is not None:
+                self.disabler_setting(True)
                 try:
                     dev_name = self.device.read('*IDN?')
                     self.ids.device.text = 'Status : ' + dev_name
@@ -60,32 +61,35 @@ class MainScreen(BoxLayout):
                     self.ids.graph_curr.draw(self.time, self.curr)
                     if self.device.read('OUTP?') is not None:
                         if int(self.device.read('OUTP?')) == 0:
-                            self.disabler(False)
+                            self.disabler_onoff(False)
                         else:
-                            self.disabler(True)
+                            self.disabler_onoff(True)
                 except:
                     print('Reading Issues')
                 sleep(0.5)
             else:
-                self.disabler(False)
+                self.disabler_onoff(False)
+                self.disabler_setting(False)
                 self.ids.device.text = 'Status : Device not connected.'
                 self.device.open()
                 sleep(2)
         return 0
 
-    def disabler(self, on_off):
+    def disabler_onoff(self, on_off):
         self.ids.btn_on.disabled = on_off
         self.ids.btn_off.disabled = not on_off
+
+    def disabler_setting(self, on_off):
         self.ids.btn_volt.disabled = not on_off
         self.ids.btn_curr.disabled = not on_off
 
     def on(self):
         self.device.write("OUTP ON")
-        self.disabler(True)
+        self.disabler_onoff(True)
 
     def off(self):
         self.device.write("OUTP OFF")
-        self.disabler(False)
+        self.disabler_onoff(False)
 
     def setVoltage(self):
         volt = float(self.ids.input_volt.text)
