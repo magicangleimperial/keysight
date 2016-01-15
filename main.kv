@@ -36,10 +36,14 @@
 			id: input_volt
 			padding: [10, (self.height - self.line_height) / 2]
 			text: "0"
+			val_min: 0
+			val_max: 300
 		FloatInput:
 			id: input_curr
 			padding: [10, (self.height - self.line_height) / 2]
 			text: "0"
+			val_min: 0
+			val_max: 5
     GraphCustom:
 		id: graph_volt
 		size: self.parent.size

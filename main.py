@@ -16,15 +16,24 @@ class FloatInput(TextInput):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.multiline = False
+        self.val_min = 0
+        self.val_max = 100
 
     def insert_text(self, s, undo=False):
         if s in ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']:
-            return super(FloatInput, self).insert_text(s, from_undo=undo)
+            self.check_before_insert(s, undo)
         elif s in ['.', ',']:
             if "." not in self.text:
                 if s == ',':
                     s = '.'
+                self.check_before_insert(s, undo)
+
+    def check_before_insert(self, s, undo):
+        if self.text + s != ".":
+            if self.val_min <= float(self.text + s) <= self.val_max:
                 return super(FloatInput, self).insert_text(s, from_undo=undo)
+        else:
+            return super(FloatInput, self).insert_text(s, from_undo=undo)
 
     def on_text_validate(self):
         print(float(self.text))
