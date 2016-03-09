@@ -1,10 +1,8 @@
 from numpy import amin, amax, ceil, log10
 from kivy.uix.behaviors import ButtonBehavior
 from kivy.garden.graph import Graph, MeshLinePlot
-from numba import jit
 
 
-@jit
 def autoscale(n_array, n_ticks):
     n_min = amin(n_array)
     n_max = amax(n_array)
