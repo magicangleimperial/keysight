@@ -32,14 +32,16 @@
     	size_hint_y: None
 		height: 50
     	orientation: 'horizontal'
-		FloatInput:
+		TextInput:
 			id: input_volt
+			input_filter: 'float'
 			padding: [10, (self.height - self.line_height) / 2]
 			text: "0"
 			val_min: 0
 			val_max: 300
-		FloatInput:
+		TextInput:
 			id: input_curr
+			input_filter: 'float'
 			padding: [10, (self.height - self.line_height) / 2]
 			text: "0"
 			val_min: 0
@@ -73,3 +75,13 @@
 		Label:
 			id: device
 			text: 'Status : Device not connected.'
+
+<WarningPopup>
+	orientation: 'vertical'
+	size_hint_x: None
+	size_hint_y: None
+	height: 400
+	width: 400
+	title: 'Warning Popup'
+    Label:
+		text: "Check dump load resistors"

@@ -4,7 +4,7 @@ from threading import Thread
 from time import sleep
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.textinput import TextInput
+from kivy.uix.popup import Popup
 from kivy import config
 import visa
 config.Config.set('input', 'mouse', 'mouse,disable_multitouch')
@@ -12,31 +12,9 @@ from kivy.lang import Builder
 Builder.load_file('graphcustom.kv')
 
 
-class FloatInput(TextInput):
+class WarningPopup(Popup):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.multiline = False
-        self.val_min = 0
-        self.val_max = 100
-
-    def insert_text(self, s, undo=False):
-        if s in ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']:
-            self.check_before_insert(s, undo)
-        elif s in ['.', ',']:
-            if "." not in self.text:
-                if s == ',':
-                    s = '.'
-                self.check_before_insert(s, undo)
-
-    def check_before_insert(self, s, undo):
-        if self.text + s != ".":
-            if self.val_min <= float(self.text + s) <= self.val_max:
-                return super(FloatInput, self).insert_text(s, from_undo=undo)
-        else:
-            return super(FloatInput, self).insert_text(s, from_undo=undo)
-
-    def on_text_validate(self):
-        print(float(self.text))
 
 
 class MainScreen(BoxLayout):
@@ -47,6 +25,7 @@ class MainScreen(BoxLayout):
         self.time = linspace(0, 599, 600)
         self.volt = zeros([600])
         self.curr = zeros([600])
+        self.warnpop = WarningPopup()
         Thread(target=self.get_curr_volt).start()
 
     def get_curr_volt(self):
@@ -102,11 +81,17 @@ class MainScreen(BoxLayout):
 
     def setVoltage(self):
         volt = float(self.ids.input_volt.text)
-        self.device.write("VOLT " + str(volt))
+        if 0 <= volt <= 300:
+            self.device.write("VOLT " + str(volt))
+        else:
+            self.ids.input_curr.text = 'Wrong Value'
 
     def setCurrent(self):
         curr = float(self.ids.input_curr.text)
-        self.device.write("CURR " + str(curr))
+        if 0 <= curr <= 5:
+            self.device.write("CURR " + str(curr))
+        else:
+            self.ids.input_curr.text = 'Wrong Value'
 
     def hist_volt(self, volt):
         self.volt = roll(self.volt, -1)
